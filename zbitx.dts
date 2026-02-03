@@ -1,0 +1,62 @@
+/*
+ * zbitx.dts
+ * 
+ * Combined overlay for zBitx:
+ * 1. Configures GPIOs 4,5,9,10,11,17,22,27 as Inputs with Pull-Ups.
+ * 2. Configures GPIOs 23,24 as Outputs with Pull-Ups.
+ * 3. Configures Software I2C on GPIOs 23 (SDA) and 22 (SCL).
+ * 
+ * 3. Configures Software I2C on GPIOs 23 (SDA) and 22 (SCL).
+ * 
+ * I2C function takes precedence.
+ * The I2C driver handles pin configuration for SDA/SCL.
+ * We remove 22 and 23 from the generic "pinctrl" blocks to avoid conflicts.
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835";
+
+    /* Fragment 0: GPIO Input Setup */
+    fragment@0 {
+        target = <&gpio>;
+        __overlay__ {
+            sbitx_inputs: sbitx_inputs {
+                brcm,pins = <4 5 9 10 11 17 27>; /* Removed 22 */
+                brcm,function = <0>; /* 0 = Input */
+                brcm,pull = <2>;     /* 2 = Pull-Up */
+            };
+        };
+    };
+
+    /* Fragment 1: GPIO Output Setup */
+    fragment@1 {
+        target = <&gpio>;
+        __overlay__ {
+            sbitx_outputs: sbitx_outputs {
+                brcm,pins = <24>; /* Removed 23 */
+                brcm,function = <1>; /* 1 = Output */
+                brcm,pull = <2>;     /* 2 = Pull-Up */
+            };
+        };
+    };
+
+    /* Fragment 2: Software I2C */
+    fragment@2 {
+        target-path = "/";
+        __overlay__ {
+            i2c_gpio: i2c@0 {
+                compatible = "i2c-gpio";
+                gpios = <&gpio 23 0 /* SDA */
+                         &gpio 22 0 /* SCL */
+                        >;
+                i2c-gpio,delay-us = <2>; /* ~100 kHz */
+                #address-cells = <1>;
+                #size-cells = <0>;
+                status = "okay";
+            };
+        };
+    };
+};
