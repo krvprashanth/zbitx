@@ -18,19 +18,15 @@ To build:
 make
 ```
 
-### Prerequisites
+### Using Meson
 
 Install the required dependencies:
 
 ```bash
 sudo apt update
 sudo apt install meson ninja-build build-essential
-sudo apt install libgtk-3-dev libasound2-dev libfftw3-dev libncurses-dev libsqlite3-dev
+
 ```
-
-For `wiringPi` (required for hardware control), you may need to install it from source or a specific package depending on your distribution. See `docs/install.txt` for details.
-
-### Using Meson
 
 1. Setup the build directory:
 ```bash
@@ -45,4 +41,27 @@ meson compile -C builddir
 3. Run the application:
 ```bash
 ./builddir/sbitx
+```
+
+## Kernel I2C Configuration
+
+To use the Kernel I2C interface for Si5351 and DS3231 (replacing bit-banged I2C), add the following to `/boot/firmware/config.txt`:
+
+```ini
+dtoverlay=i2c-gpio,bus=3,i2c_gpio_sda=13,i2c_gpio_scl=6
+dtoverlay=i2c-rtc-gpio,ds1307,i2c_gpio_sda=13,i2c_gpio_scl=6
+```
+
+This creates a new I2C bus (likely `/dev/i2c-3`) and loads the RTC driver.
+
+After reboot, you can verify the devices:
+```bash
+i2cdetect -y 3
+```
+You should see `UU` at address 0x68 (DS3231 under kernel control) and `60` at address 0x60 (Si5351).
+
+To read the RTC time via the kernel driver:
+```bash
+cat /sys/class/rtc/rtc0/date
+cat /sys/class/rtc/rtc0/time
 ```
