@@ -1,10 +1,6 @@
-# zbitx Firmware
+# zbitx Refactor
 
-This repository contains the firmware for the sBitx radio.
-
-## Project Structure
-
-The project has been restructured into a standard embedded firmware layout:
+restructured:
 
 - `src/`: Source code organized by component (core, drivers, modems, etc.)
 - `include/`: Header files
@@ -16,30 +12,37 @@ The project has been restructured into a standard embedded firmware layout:
 
 ## Building
 
-To build the project:
+To build:
 
 ```bash
 make
 ```
 
-Or use the build script:
+### Prerequisites
+
+Install the required dependencies:
 
 ```bash
-./scripts/build
+sudo apt update
+sudo apt install meson ninja-build build-essential
+sudo apt install libgtk-3-dev libasound2-dev libfftw3-dev libncurses-dev libsqlite3-dev
 ```
 
-## Running
+For `wiringPi` (required for hardware control), you may need to install it from source or a specific package depending on your distribution. See `docs/install.txt` for details.
 
-To start the application:
+### Using Meson
 
+1. Setup the build directory:
 ```bash
-./scripts/start.sh
+meson setup builddir
 ```
 
-## Updating
-
-To pull the latest changes and rebuild:
-
+2. Compile:
 ```bash
-./scripts/update
+meson compile -C builddir
+```
+
+3. Run the application:
+```bash
+./builddir/sbitx
 ```
