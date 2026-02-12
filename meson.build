@@ -56,7 +56,7 @@ sbitx_sources = files(
   'src/dsp/fft_filter.c',
   'src/core/sbitx_gtk.c',
   'src/core/sbitx_utils.c',
-  'src/drivers/i2cbb.c',
+  'src/drivers/linux_i2c.c',
   'src/drivers/si5351v2.c',
   'src/logbook/ini.c',
   'src/radio/hamlib.c',

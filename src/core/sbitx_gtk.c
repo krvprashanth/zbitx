@@ -41,7 +41,7 @@ The initial sync between the gui values, the core radio values, settings, et al 
 #include "hamlib.h"
 #include "remote.h"
 #include "modem_ft8.h"
-#include "i2cbb.h"
+#include "linux_i2c.h"
 #include "webserver.h"
 #include "logbook.h"
 #include "oled.h"
@@ -3811,7 +3811,7 @@ void query_swr(){
 
 	if (!in_tx)
 		return;
-	if(i2cbb_read_i2c_block_data(0x8, 0, 4, response) == -1)
+	if(sbitx_i2c_read_i2c_block_data(0x8, 0, 4, response) == -1)
 		return;
 
 	vfwd = vref = 0;
@@ -4088,7 +4088,7 @@ static void zbitx_logs(){
 	while(fgets(row, sizeof(row), pf)){
 		sprintf(row_response, "QSO %s}", row);
 		//printf(row_response);
-		i2cbb_write_i2c_block_data(ZBITX_I2C_ADDRESS, '{', strlen(row_response), row_response);
+		sbitx_i2c_write_i2c_block_data(ZBITX_I2C_ADDRESS, '{', strlen(row_response), row_response);
 	}
 	fclose(pf);
 }
@@ -4111,7 +4111,7 @@ void zbitx_poll(int all){
 			sprintf(buff, "%s %s}", f->label, f->value);
 			retry = 3;
 			do {
-				e = i2cbb_write_i2c_block_data(ZBITX_I2C_ADDRESS, '{', strlen(buff), buff);
+				e = sbitx_i2c_write_i2c_block_data(ZBITX_I2C_ADDRESS, '{', strlen(buff), buff);
 				if (!e){
 					if (retry < 3)
 						printf("Sucess on %d\n", retry);
@@ -4138,7 +4138,7 @@ void zbitx_poll(int all){
 		remote_cmd[i++] = '}';
 		remote_cmd[i++] = 0;
  	
-		e = i2cbb_write_i2c_block_data(ZBITX_I2C_ADDRESS, '{', 
+		e = sbitx_i2c_write_i2c_block_data(ZBITX_I2C_ADDRESS, '{', 
 			strlen(remote_cmd), remote_cmd);
 	}
 
@@ -4147,12 +4147,12 @@ void zbitx_poll(int all){
 		strcat(buff, "}"); //terminate the block
 		//spectrum can be lost mometarily, it is alright	
 		delay(1);
-		i2cbb_write_i2c_block_data(0x0a, '{', strlen(buff), buff);
+		sbitx_i2c_write_i2c_block_data(0x0a, '{', strlen(buff), buff);
 	}
 	//transmit in_tx
 	sprintf(buff, "IN_TX %d}", in_tx);
 	delay(1);
-	i2cbb_write_i2c_block_data(0x0a, '{', strlen(buff), buff);
+	sbitx_i2c_write_i2c_block_data(0x0a, '{', strlen(buff), buff);
 
 	if(update_logs){
 		zbitx_logs();
@@ -4161,7 +4161,7 @@ void zbitx_poll(int all){
 
 	int  reply_length;
 
-	if ((reply_length = i2cbb_read_rll(0xa, buff)) != -1){
+	if ((reply_length = sbitx_i2c_read_rll(0xa, buff)) != -1){
 	//zero terminate the reply
 		buff[reply_length] = 0;
 
@@ -4190,7 +4190,7 @@ void zbitx_poll(int all){
 void zbitx_init(){
 	char buff[100];
 	sprintf(buff, "9 %s}", VER_STR);
- 	int e = i2cbb_write_i2c_block_data (ZBITX_I2C_ADDRESS, '{', 
+ 	int e = sbitx_i2c_write_i2c_block_data (ZBITX_I2C_ADDRESS, '{', 
 		strlen(buff), buff);
 
 
@@ -4199,7 +4199,7 @@ void zbitx_init(){
 		zbitx_available = 1;
 
 
- 		e = i2cbb_write_i2c_block_data (ZBITX_I2C_ADDRESS, '{', 
+ 		e = sbitx_i2c_write_i2c_block_data (ZBITX_I2C_ADDRESS, '{', 
 		strlen(VER_STR), VER_STR);
 
 		FILE *pf = popen("hostname -I", "r");
@@ -4212,7 +4212,7 @@ void zbitx_init(){
 			if (p){
 				*p = 0;
 				sprintf(buff, "9 \nzBitx on http://%s\n}", ip_str);
- 				i2cbb_write_i2c_block_data (ZBITX_I2C_ADDRESS, '{', 
+ 				sbitx_i2c_write_i2c_block_data (ZBITX_I2C_ADDRESS, '{', 
 					strlen(buff), buff);
 			}
 		}

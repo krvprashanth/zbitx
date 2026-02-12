@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <wiringPi.h>
-#include "i2cbb.h"
+#include "linux_i2c.h"
 #include "oled.h"
 
 /* 
@@ -11,8 +11,6 @@ The oled framebuffer is divided into 8 pages, top to bottom.
 Each page is 8 rows wide. Each vertical row is represented by a byte
 */
 
-#define SDA 23 
-#define SCL 22
 
 static uint8_t oled_bmp[10000];
 static uint8_t oled_pages = 8; 
@@ -126,11 +124,11 @@ void oled_refresh() {
 		oled_sequence[1] = 0x0;
 		oled_sequence[2] = 0x10;
 
- 		int e = i2cbb_write_i2c_block_data (OLED_ADDR, OLED_COMMAND, 4, oled_sequence);
+ 		int e = sbitx_i2c_write_i2c_block_data (OLED_ADDR, OLED_COMMAND, 4, oled_sequence);
 		if (e)
 			printf("oled_write: error writing ssd1306 register at %d index\n", e);
 	
- 		e = i2cbb_write_i2c_block_data (OLED_ADDR, OLED_DATA, 128, oled_bmp + (i * 128));
+ 		e = sbitx_i2c_write_i2c_block_data (OLED_ADDR, OLED_DATA, 128, oled_bmp + (i * 128));
 		if (e)
 			printf("oled_write: error writing ssd1306 frame buffer at %d index\n", e);
 	}
@@ -139,8 +137,7 @@ void oled_refresh() {
 
 
 int oled_init(){
-  i2cbb_init(SDA, SCL); //just in case...
- 	int e = i2cbb_write_i2c_block_data (OLED_ADDR, OLED_COMMAND, sizeof(oled_init_sequence), oled_init_sequence);
+ 	int e = sbitx_i2c_write_i2c_block_data (OLED_ADDR, OLED_COMMAND, sizeof(oled_init_sequence), oled_init_sequence);
 	if (e){
 		printf("oled display not detected\n");
 		return -1;
@@ -174,7 +171,6 @@ void oled_clear(){
 /*
 int main(int argc, char **argvc){
 	wiringPiSetup();
-  i2cbb_init(SDA, SCL);
 	delay(10);
 
 	oled_init();

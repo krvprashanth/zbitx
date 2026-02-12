@@ -2,11 +2,9 @@
 #include <linux/types.h>
 #include <stdint.h>
 #include <wiringPi.h>
-#include "i2cbb.h"
+#include "linux_i2c.h"
 #include "si5351.h"
 
-#define SDA 23 
-#define SCL 22
 
 #define SI_CLK0_CONTROL  16      // Register definitions
 #define SI_CLK1_CONTROL 17
@@ -53,12 +51,12 @@ static int i2c_error_count = 0;       // counts I2C Errors
 
 /*
 void i2cSendRegister(uint8_t reg, uint8_t* data, uint8_t n){
-  i2cbb_write_i2c_block_data (SI5351_ADDR, reg, n, data); 
+  sbitx_i2c_write_i2c_block_data (SI5351_ADDR, reg, n, data); 
 }
 */
 
 void i2cSendRegister(uint8_t reg, uint8_t val){ 
-  while (i2cbb_write_byte_data(SI5351_ADDR, reg, val) < 0)
+  while (sbitx_i2c_write_byte_data(SI5351_ADDR, reg, val) < 0)
   {
     printf("Repeating I2C #%d\n",i2c_error_count++);  // reports number of I2C repeats caused by errors
     delay(1);
@@ -258,7 +256,6 @@ void si5351_set_calibration(int32_t cal){
 }
 
 void si5351bx_init(){ 
-  i2cbb_init(SDA, SCL);
 	delay(10);
   si5351_reset();
 	delay(10);
