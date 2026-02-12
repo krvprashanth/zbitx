@@ -1,0 +1,12 @@
+#!/bin/sh -e
+# Note: the '-e' flag will make the script stop immediately upon error.
+
+# Navigate to project root
+cd "$(dirname "$0")/.."
+
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+date
+git remote set-url origin https://github.com/afarhan/zbitx.git
+git pull
+./scripts/build
+echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
